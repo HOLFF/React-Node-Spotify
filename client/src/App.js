@@ -35,12 +35,17 @@ class App extends Component {
       .then((response) => {
         this.setState({
           nowPlaying: { 
-              name: response.item.name, 
+              name: response.item.name,
               albumArt: response.item.album.images[0].url
             }
         });
       })
   }
+
+  skipToNext(){
+  spotifyApi.skipToNext()
+  }
+
   render() {
     return (
       <div className="App">
@@ -48,11 +53,19 @@ class App extends Component {
         <div>
           Now Playing: { this.state.nowPlaying.name }
         </div>
+        <div>
+          <img src={this.state.nowPlaying.albumArt} style={{ height: 150 }}/>
+        </div>
         { this.state.loggedIn &&
           <button onClick={() => this.getNowPlaying()}>
             Check Now Playing
           </button>
         }
+        { this.state.loggedIn &&
+        <button onClick={() => this.skipToNext()}>
+          Skip to Next
+        </button>
+        } 
       </div>
     );
   }
