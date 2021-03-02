@@ -10,17 +10,18 @@ class App extends Component {
     super();
     const params = this.getHashParams();
     const token = params.access_token;
-    if (true) {
-      spotifyApi.setAccessToken("BQDJ78UMr0ieSfsAFidog_D8Ek41Voco7qM--v6HAdcSKzOWLuiOXHfWKiMDK4CHtYuZo1JNlIICQABD67yHEWGGGr8U2FKTHO_e9zCYVf647b6RhNc6qaRpjVoaQivNqQ7BwvowSiHLqLg_wBEOnIOWye2doVRcmQKXiQLiBVvrVn5AWMqfCchJqPwq&refresh_token=AQA6l1WL8PXv3Xxcav9Bl7-ygFX8-EAp9Ro2nplbyCdffq5mGkyPI8D9Fh1-PX2NbwZZy_S0hcFYiUoni-B2fa7UzpKObZToEFmzXimO1_rmAmZ4KVEB0xC9-Bt9pM5nNbQ");
+    if (token) {
+      spotifyApi.setAccessToken(token);
     }
     this.state = {
-      loggedIn:  true,
-      nowPlaying: { name: 'Not Checked', albumArt: '' },
-      userPlayList: {name: 'Not Checked'},
+      loggedIn: token ? true : false,
+      nowPlaying: { name: 'Name',albname: 'Album', albumArt: '', arname: 'Artist'},
+      userPlaylist: {name: 'Not Checked'},
       playListTracks: {name: 'Not Checked'},
       trackToPlayList: {name: 'Not Checked'}
     }
   }
+ 
   getHashParams() {
     var hashParams = {};
     var e, r = /([^&;=]+)=?([^&;]*)/g,
@@ -36,22 +37,28 @@ class App extends Component {
   getNowPlaying(){
     spotifyApi.getMyCurrentPlayingTrack()
       .then((response) => {
+        let artists="";
+        response.item.artists.forEach(artist  => {
+          artists+=artist.name + ", "             
+        });
+        artists = artists.slice(0,-2);
         this.setState({
           nowPlaying: { 
               name: response.item.name,
-              albumArt: response.item.album.images[0].url
+              albname : response.item.album.name,
+              albumArt: response.item.album.images[0].url,
+              arname: artists
             }
         });
       })
   }
 
-  getPlayLists(){
+  getPlaylists(){
     spotifyApi.getUserPlaylists()
       .then((response) => {
         this.setState({
-          userPlayList: {
-              name: response.item.name,
-              playList: response.item.name
+          userPlaylist: {
+              name: response.items[0].name
             }    
         });
       })  
@@ -63,7 +70,7 @@ class App extends Component {
         this.setState({
           playListTracks:{
             name:response.item.name,
-            tracks: respone.item.name     
+            tracks: response.item.name     
             }
         });
       }) 
@@ -82,18 +89,30 @@ class App extends Component {
   }
 
   skipToNext(){
-  spotifyApi.skipToNext()
+  spotifyApi.skipToNext();
+  this.sleep(1000).then(()=>{this.getNowPlaying()})
+  }
+
+  sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   render() {
     return (
       <div className="App">
         <a href='http://localhost:8888' > Login to Spotify </a>
-        <div>
-          Now Playing: { this.state.nowPlaying.name }
+        <div>Currently Playing Song:
+          <h1></h1>
+          Title: { this.state.nowPlaying.name }
+          <br></br>
+          <img src={this.state.nowPlaying.albumArt} style={{ height: 150 }}/>
+          <br></br>
+          From Album: { this.state.nowPlaying.albname }
+          <br></br>
+          By Artist: { this.state.nowPlaying.arname }
         </div>
         <div>
-          <img src={this.state.nowPlaying.albumArt} style={{ height: 150 }}/>
+
         </div>
         { this.state.loggedIn &&
           <button onClick={() => this.getNowPlaying()}>
@@ -105,6 +124,14 @@ class App extends Component {
           Skip to Next
         </button>
         } 
+        { this.state.loggedIn &&
+        <button onClick={() => this.getPlaylists()}>
+          User Playlists
+        </button>
+        }
+         <div>
+          User Playlist: { this.state.userPlaylist.name }
+        </div>
       </div>
     );
   }
