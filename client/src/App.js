@@ -1,6 +1,8 @@
   
 import React, { Component } from 'react';
 import './App.css';
+import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
+import { Carousel } from 'react-responsive-carousel';
 
 import SpotifyWebApi from 'spotify-web-api-js';
 const spotifyApi = new SpotifyWebApi();
@@ -8,6 +10,7 @@ const spotifyApi = new SpotifyWebApi();
 class App extends Component {
   constructor(){
     super();
+    const plstate = 0;
     const params = this.getHashParams();
     const token = params.access_token;
     if (token) {
@@ -16,9 +19,13 @@ class App extends Component {
     this.state = {
       loggedIn: token ? true : false,
       nowPlaying: { name: 'Name',albname: 'Album', albumArt: '', arname: 'Artist'},
-      userPlaylist: {name: 'Not Checked'},
+      userPlaylists: {name1: 'Not Checked', by1: 'Not Checked', cover1:'',
+                      name2: 'Not Checked', by2: 'Not Checked', cover2:'', 
+                      name3: 'Not Checked', by3: 'Not Checked', cover3:''},
       playListTracks: {name: 'Not Checked'},
-      trackToPlayList: {name: 'Not Checked'}
+      trackToPlayList: {name: 'Not Checked'},
+      loadText: {bf:"Discover User Playists"}
+      
     }
   }
  
@@ -58,34 +65,14 @@ class App extends Component {
       .then((response) => {
         this.setState({
           userPlaylist: {
-              name: response.items[0].name
+              name: response.items[0].name1
             }    
         });
       })  
   }
 
-  getTracksOfPlayList(){ 
-    spotifyApi.getPlaylistTracks()
-      .then((response) => {
-        this.setState({
-          playListTracks:{
-            name:response.item.name,
-            tracks: response.item.name     
-            }
-        });
-      }) 
-  }
+  addTracktoQueue(){
 
-  addTrackToPlayList(){
-    spotifyApi.addTracksToPlaylist()
-      .then((response) => {
-        this.setState({
-          trackToPlayList: {   
-              name: response.item.name,
-              addedTrackToPlayList: response.item.name
-            }    
-        });
-      })  
   }
 
   skipToNext(){
@@ -101,8 +88,8 @@ class App extends Component {
     return (
       <div className="App">
         <a href='http://localhost:8888' > Login to Spotify </a>
-        <div>Currently Playing Song:
-          <h1></h1>
+        <div>
+          <h3>Currently Playing Song:</h3>
           Title: { this.state.nowPlaying.name }
           <br></br>
           <img src={this.state.nowPlaying.albumArt} style={{ height: 150 }}/>
@@ -110,9 +97,6 @@ class App extends Component {
           From Album: { this.state.nowPlaying.albname }
           <br></br>
           By Artist: { this.state.nowPlaying.arname }
-        </div>
-        <div>
-
         </div>
         { this.state.loggedIn &&
           <button onClick={() => this.getNowPlaying()}>
@@ -130,8 +114,27 @@ class App extends Component {
         </button>
         }
          <div>
-          User Playlist: { this.state.userPlaylist.name }
+          User Playlist: { this.state.userPlaylists.name1 }
         </div>
+        <Carousel>
+                <div>
+                    <img src="assets/1.jpeg" />
+                    <p className="legend">Legend 1</p>
+                </div>
+                <div>
+                    <img src="assets/2.jpeg" />
+                    <p className="legend">Legend 2</p>
+                </div>
+                <div>
+                    <img src="assets/3.jpeg" />
+                    <p className="legend">Legend 3</p>
+                </div>
+        </Carousel>
+        { this.state.loggedIn &&
+          <button onClick={() => this.getNowPlaying()}>
+             {this.state.loadText.bf}
+          </button>
+        }
       </div>
     );
   }
